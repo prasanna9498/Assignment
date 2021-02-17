@@ -1,0 +1,90 @@
+1) Retireving Single Row
+CREATE TABLE employees (
+id number,name varchar2(20),address varchar(20)
+
+);
+INSERT INTO employees VALUES (102, 'Shubham','Netaji Chowk' );
+create or replace function fetchingRow (emp_id number)
+   return sys_refcursor
+is
+   c   sys_refcursor;
+begin
+   open c for
+      select *
+        from employees
+       where id = emp_id;
+
+   return c;
+end fetchingRow;
+declare
+c sys_refcursor;
+TYPE employee is RECORD(id number,name varchar2(20),address varchar(20));
+x employee;
+begin
+  c:=fetchingRow(101);
+  fetch c into x;
+  dbms_output.put_line(x.id||','||x.name||','||x.address);
+end;
+---------------------------------------------------------------------------------------------
+2)Retrieving Multiple Rows
+
+create or replace function multipleRows
+   return sys_refcursor
+is
+   c   sys_refcursor;
+begin
+   open c for
+      select *
+        from employees;
+
+   return c;
+end multipleRows;
+
+declare
+c sys_refcursor;
+TYPE employee is RECORD(id number,name varchar2(20),address varchar2(20));
+x employee;
+begin
+  c:=multipleRows();
+  loop
+  fetch c into x;
+  exit when c%notfound;
+  dbms_output.put_line(x.id||','||x.name||','||x.address);
+  end loop;
+end;
+
+------------------------------------------------------------------------------
+3) Multiple Inserts
+
+CREATE TABLE products(
+  p_id number(20),
+  p_name varchar2(25),
+  
+  CONSTRAINT p_pk PRIMARY KEY (p_id));
+
+CREATE TABLE department(
+  dept_id number(20),
+  dept_name varchar2(25),
+  
+  CONSTRAINT department_pk PRIMARY KEY (dept_id));
+
+CREATE OR REPLACE PROCEDURE Insert_multiple(p_id IN number,p_name IN varchar2,dept_id IN number,dept_name IN varchar2)IS
+  BEGIN     
+  insert into products values(p_id,p_name);
+  insert into department values(dept_id,dept_name);
+  END;     
+
+DECLARE
+BEGIN
+insert_multiple(1,'Kissan',5,'Marketing');
+EXCEPTION
+ WHEN DUP_VAL_ON_INDEX THEN
+ dbms_output.put_line('unique index are repeated re enter data.');
+ rollback;
+ WHEN OTHERS THEN 
+ dbms_output.put_line('data types entered does not match re enter data.');
+ rollback;
+END;
+
+select * from products
+select * from department
